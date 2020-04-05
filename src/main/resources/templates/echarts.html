@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>实时统计品类点击</title>
+</head>
+<script src="js/echarts.min.js"></script>
+<script src="js/jquery.min.js"></script>
+<body>
+<!-- 为 ECharts 准备一个具备大小（宽高）的 DOM -->
+<div id="main" style="width: 600px;height:400px; position: absolute;
+top:50%;left:50%;margin-top:-200px;margin-left: -300px"></div>
+<script type="text/javascript">
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('main'));
+
+    // var datas;
+    var datas = [];
+
+    //ajax
+    $.ajax({
+        //想访问的URL
+        url:"/sparkweb/CategoryClickCount",
+        //异步还是同步，我们是同步
+        async:false,
+        type: "POST",
+        //数据类型（指定返回数据类型自动变成json格式）
+        dataType:'json',
+        //调用回调函数
+        success:function (data) {
+            for (var i = 0; i < data.length; i++) {//{value: 335,
+                datas.push(
+                    {value: data[i].value,name: data[i].categoryName}
+                )}
+        }
+    });
+
+
+    // 指定图表的配置项和数据
+    option = {
+
+        // backgroundColor: '#2c343c',
+
+        title : {
+            text: '爱奇艺品类点击实时情况',
+            subtext: '辛聪明制',
+            x:'center'
+        },
+        tooltip : {
+            trigger: 'item',
+            formatter: "{a} <br/>{b} : {c} ({d}%)"
+        },
+        legend: {
+            orient: 'vertical',
+            left: 'left',
+            data:datas
+        },
+        series : [
+            {
+                name: '访问来源',
+                type: 'pie',
+                radius : '55%',
+                center: ['50%', '60%'],
+                data:datas.sort(function (a, b) { return a.value - b.value; }),
+                //里面的原始数据的样式跟我们抽象出来的CategoryClickCount.java 是一样的。 {value:335, name:'直接访问'} 所以只要我们这里的数据是实时的就可以了
+                itemStyle: {
+                    emphasis: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                }
+            }
+        ]
+    };
+
+    // 【05】使用刚指定的配置项和数据显示图表。
+    myChart.setOption(option);
+</script>
+<!--<script>-->
+<!--    function myrefresh() {-->
+<!--        window.location.reload()-->
+<!--    }-->
+<!--    setTimeout('myrefresh()',2000) //每隔两秒调一次方法-->
+<!--</script>-->
+</body>
+</html>
